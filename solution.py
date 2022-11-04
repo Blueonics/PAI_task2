@@ -262,9 +262,11 @@ class MNISTNet(nn.Module):
         super().__init__()
         # TODO General_2: Play around with the network structure.
         # You could change the depth or width of the model
-        self.layer1 = nn.Linear(in_features, 400)
-        self.layer2 = nn.Linear(400, 100)
-        self.layer3 = nn.Linear(100, out_features)
+        self.layer1 = nn.Linear(in_features, 600)
+        self.layer2 = nn.Linear(600, 300)
+        self.layer3 = nn.Linear(300, 200)
+        self.layer4 = nn.Linear(200, 100)
+        self.layer5 = nn.Linear(100, out_features)
         self.dropout_p = dropout_p
 
         # if self.dropout_p < 1:
@@ -287,8 +289,18 @@ class MNISTNet(nn.Module):
             p=self.dropout_p,
             training=self.training or self.dropout_at_eval
         )
+        x = F.dropout(
+            F.relu(self.layer3(x)),
+            p=self.dropout_p,
+            training=self.training or self.dropout_at_eval
+        )
 
-        class_probs = self.layer3(x)
+        x = F.dropout(
+            F.relu(self.layer4(x)),
+            p=self.dropout_p,
+            training=self.training or self.dropout_at_eval
+        )
+        class_probs = self.layer5(x)
         return class_probs
 
 
@@ -318,9 +330,11 @@ class DropoutTrainer(Framework):
 
         # Hyperparameters and general parameters
         # TODO: MC_Dropout_4. Do experiments and tune hyperparameters
-        self.batch_size = 128
+        self.batch_size = 64
         self.learning_rate = 1e-3
         self.num_epochs = 200
+        self.weight_decay = 0.01
+        self.momentum = 0.9
         self.train_loader = torch.utils.data.DataLoader(
             dataset_train, batch_size=self.batch_size, shuffle=True, drop_last=True
         )
@@ -329,7 +343,8 @@ class DropoutTrainer(Framework):
         # TODO: MC_Dropout_1. Initialize the MC_Dropout network and optimizer here
         # You can check the Dummy Trainer above for intuition about what to do
         self.network = MNISTNet(in_features=28 * 28, out_features=10, dropout_p=0.2, dropout_at_eval=False)
-        self.optimizer = torch.optim.SGD(self.network.parameters(), lr=self.learning_rate, weight_decay=0.004, momentum=0.9)
+        self.optimizer = torch.optim.SGD(self.network.parameters(), lr=self.learning_rate,
+                                         weight_decay=self.weight_decay, momentum=self.momentum)
 
     def train(self):
         torch.manual_seed(0)
