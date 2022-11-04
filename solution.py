@@ -79,7 +79,7 @@ def run_solution(dataset_train: torch.utils.data.Dataset, data_dir: str = os.cur
     elif combined_model:
         # using combined model
 
-        # TODO: Combined model_2: If you want to use combined methods 
+        # TODO: Combined model_2: If you want to use combined methods
         # you can set the trainers you want to use like below
         trainer1 = DummyTrainer(dataset_train=dataset_train)
         trainer2 = DummyTrainer(dataset_train=dataset_train)
@@ -104,8 +104,8 @@ def run_solution(dataset_train: torch.utils.data.Dataset, data_dir: str = os.cur
 
 def calc_calibration_curve(predicted_probabilities: np.ndarray, labels: np.ndarray, num_bins=30) -> dict:
     """
-    Calculate ece and understand what is good calibration. This task is part of the 
-    extended evaluation and not required for passing. 
+    Calculate ece and understand what is good calibration. This task is part of the
+    extended evaluation and not required for passing.
     """
 
     num_samples, num_classes = predicted_probabilities.shape
@@ -170,7 +170,7 @@ class Framework(object):
 def combined_predict(data_loader: torch.utils.data.DataLoader, models_list: list) -> np.ndarray:
     """
     Predict the class probabilities using a combination of your trained model.
-    This method should return an (num_samples, 10) NumPy float array - the same as 
+    This method should return an (num_samples, 10) NumPy float array - the same as
     predict()- such that the second dimension sums up to 1 for each row.
     :param data_loader: Data loader yielding the samples to predict on
     :return: (num_samples, 10) NumPy float array where the second dimension sums up to 1 for each row
@@ -194,8 +194,8 @@ def combined_predict(data_loader: torch.utils.data.DataLoader, models_list: list
 class DummyTrainer(Framework):
     """
     Trainer implementing a simple feedforward neural network.
-    You can learn how to build your own trainer and use this model as a reference/baseline for 
-    the calibration of a standard Neural Network. 
+    You can learn how to build your own trainer and use this model as a reference/baseline for
+    the calibration of a standard Neural Network.
     """
 
     def __init__(self, dataset_train,
@@ -243,7 +243,7 @@ class DummyTrainer(Framework):
                     progress_bar.set_postfix(loss=loss.item(), acc=current_accuracy.item())
 
     def predict_probabilities(self, x: torch.Tensor) -> torch.Tensor:
-        # using the confidence as estimated probaility, 
+        # using the confidence as estimated probaility,
         self.network.eval()
         assert x.shape[1] == 28 ** 2
         estimated_probability = F.softmax(self.network(x), dim=1)
@@ -262,8 +262,8 @@ class MNISTNet(nn.Module):
         super().__init__()
         # TODO General_2: Play around with the network structure.
         # You could change the depth or width of the model
-        self.layer1 = nn.Linear(in_features, 100)
-        self.layer2 = nn.Linear(100, 100)
+        self.layer1 = nn.Linear(in_features, 400)
+        self.layer2 = nn.Linear(400, 100)
         self.layer3 = nn.Linear(100, out_features)
         self.dropout_p = dropout_p
 
@@ -276,7 +276,7 @@ class MNISTNet(nn.Module):
 
     def forward(self, x):
         # TODO General_2: Play around with the network structure
-        # You might add different modules like Pooling 
+        # You might add different modules like Pooling
         x = F.dropout(
             F.relu(self.layer1(x)),
             p=self.dropout_p,
@@ -299,7 +299,7 @@ class SelfMadeNetwork(nn.Module):
                  ):
         super().__init__()
         # TODO General_3: Play around with the network structure.
-        # You can customize your own model here. 
+        # You can customize your own model here.
         self.layer1 = None
         self.layer2 = None
         self.layer3 = None
@@ -320,7 +320,7 @@ class DropoutTrainer(Framework):
         # TODO: MC_Dropout_4. Do experiments and tune hyperparameters
         self.batch_size = 128
         self.learning_rate = 1e-3
-        self.num_epochs = 100
+        self.num_epochs = 200
         self.train_loader = torch.utils.data.DataLoader(
             dataset_train, batch_size=self.batch_size, shuffle=True, drop_last=True
         )
@@ -329,7 +329,7 @@ class DropoutTrainer(Framework):
         # TODO: MC_Dropout_1. Initialize the MC_Dropout network and optimizer here
         # You can check the Dummy Trainer above for intuition about what to do
         self.network = MNISTNet(in_features=28 * 28, out_features=10, dropout_p=0.2, dropout_at_eval=False)
-        self.optimizer = torch.optim.SGD(self.network.parameters(), lr=self.learning_rate, weight_decay=0.02, momentum=0.9)
+        self.optimizer = torch.optim.SGD(self.network.parameters(), lr=self.learning_rate, weight_decay=0.004, momentum=0.9)
 
     def train(self):
         torch.manual_seed(0)
@@ -431,7 +431,7 @@ class EnsembleTrainer(Framework):
             network.eval()
 
             # TODO: Ensemble_3. Implement Ensemble prediction here
-        # You need obtain predictions from each ensemble member and think about 
+        # You need obtain predictions from each ensemble member and think about
         # how to combine the results from each of them
         estimated_probability = None
 
@@ -595,7 +595,7 @@ class BayesianLayer(nn.Module):
 
         # Background Pytorch will backpropogate gradients to an object initialized with
         # torch.Parameter(...) and the object will be updated when computing loss.backwards()
-        # during training. This will not happen for a torch.Tensor(...) object, which is by default a constant. 
+        # during training. This will not happen for a torch.Tensor(...) object, which is by default a constant.
 
         # TODO: Backprop_1. Create a suitable prior for weights and biases as an instance of ParameterDistribution.
         #  You can use the same prior for both weights and biases, but are also free to experiment with other priors.
@@ -612,7 +612,7 @@ class BayesianLayer(nn.Module):
         #  IMPORTANT: You need to create a nn.Parameter(...) for each parameter
         #  and add those parameters as an attribute in the ParameterDistribution instances.
         #  If you forget to do so, PyTorch will not be able to optimize your variational posterior.
-        # The variational posterior for weights is created here. For the biases it is created further down. 
+        # The variational posterior for weights is created here. For the biases it is created further down.
         #  Example: self.weights_var_posterior = MyPosterior(
         #      torch.nn.Parameter(torch.zeros((out_features, in_features))),
         #      torch.nn.Parameter(torch.ones((out_features, in_features)))
@@ -732,13 +732,13 @@ class UnivariateGaussian(ParameterDistribution):
         self.sigma = sigma
 
     def log_likelihood(self, values: torch.Tensor) -> torch.Tensor:
-        # TODO: Backprop_4. You need to complete the log likelihood function 
-        # for the Univariate Gaussian distribution. 
+        # TODO: Backprop_4. You need to complete the log likelihood function
+        # for the Univariate Gaussian distribution.
         return 0.0
 
     def sample(self) -> torch.Tensor:
-        # TODO: Backprop_4. You need to complete the sample function 
-        # for the Univariate Gaussian distribution. 
+        # TODO: Backprop_4. You need to complete the sample function
+        # for the Univariate Gaussian distribution.
         raise NotImplementedError()
 
 
@@ -758,13 +758,13 @@ class MultivariateDiagonalGaussian(ParameterDistribution):
         self.rho = rho
 
     def log_likelihood(self, values: torch.Tensor) -> torch.Tensor:
-        # TODO: Backprop_5. You need to complete the log likelihood function 
-        # for the Multivariate DiagonalGaussian Gaussian distribution. 
+        # TODO: Backprop_5. You need to complete the log likelihood function
+        # for the Multivariate DiagonalGaussian Gaussian distribution.
         return 0.0
 
     def sample(self) -> torch.Tensor:
-        # TODO: Backprop_5. You need to complete the sample function 
-        # for the Multivariate DiagonalGaussian Gaussian distribution. 
+        # TODO: Backprop_5. You need to complete the sample function
+        # for the Multivariate DiagonalGaussian Gaussian distribution.
         raise NotImplementedError()
 
 
@@ -825,7 +825,7 @@ def evaluate(model: Framework, eval_loader: torch.utils.data.DataLoader, data_di
 
     # TODO: Reliability_diagram_3. draw reliability diagram on Test Data
     # You can uncomment the below code to make it run. You can learn from
-    # the graph about how to improve your model. Remember first to complete 
+    # the graph about how to improve your model. Remember first to complete
     # the function of calc_calibration_curve.
 
     # print('Plotting reliability diagram on Test Dataset')
