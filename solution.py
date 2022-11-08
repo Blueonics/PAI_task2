@@ -330,10 +330,10 @@ class DropoutTrainer(Framework):
 
         # Hyperparameters and general parameters
         # TODO: MC_Dropout_4. Do experiments and tune hyperparameters
-        self.batch_size = 64
+        self.batch_size = 80
         self.learning_rate = 1e-3
-        self.num_epochs = 200
-        self.weight_decay = 0.01
+        self.num_epochs = 800
+        self.weight_decay = 0.004
         self.momentum = 0.9
         self.train_loader = torch.utils.data.DataLoader(
             dataset_train, batch_size=self.batch_size, shuffle=True, drop_last=True
